@@ -1,0 +1,65 @@
+{
+  "customers": {
+    "columns": [
+      { "name": "customer_id", "type": "INT", "key": "PRIMARY" },
+      { "name": "name", "type": "VARCHAR(255)", "key": "" },
+      { "name": "email", "type": "VARCHAR(255)", "key": "" }
+    ],
+    "relations": {
+      "orders": {
+        "foreign_key": "customer_id",
+        "referenced_table": "orders",
+        "referenced_column": "customer_id"
+      }
+    },
+    "description": "The `customers` table stores information about individuals who have made purchases. Each customer has a unique `customer_id`, which serves as the primary key. This table includes fields like `name` and `email` to capture customer details. The `customers` table is related to the `orders` table through the `customer_id` foreign key, allowing the retrieval of all orders placed by a particular customer."
+  },
+  "orders": {
+    "columns": [
+      { "name": "order_id", "type": "INT", "key": "PRIMARY" },
+      { "name": "customer_id", "type": "INT", "key": "FOREIGN" },
+      { "name": "order_date", "type": "DATE", "key": "" }
+    ],
+    "relations": {
+      "customers": {
+        "foreign_key": "customer_id",
+        "referenced_table": "customers",
+        "referenced_column": "customer_id"
+      },
+      "order_items": {
+        "foreign_key": "order_id",
+        "referenced_table": "order_items",
+        "referenced_column": "order_id"
+      }
+    },
+    "description": "The `orders` table contains records of all purchases made by customers. Each order is identified by a unique `order_id`, which serves as the primary key. The `customer_id` foreign key links each order to the corresponding customer in the `customers` table. The `order_date` field records the date when the order was placed. The `orders` table is also linked to the `order_items` table via the `order_id` foreign key, which details the products included in each order."
+  },
+  "order_items": {
+    "columns": [
+      { "name": "order_item_id", "type": "INT", "key": "PRIMARY" },
+      { "name": "order_id", "type": "INT", "key": "FOREIGN" },
+      { "name": "product_id", "type": "INT", "key": "FOREIGN" },
+      { "name": "quantity", "type": "INT", "key": "" }
+    ],
+    "relations": {
+      "orders": {
+        "foreign_key": "order_id",
+        "referenced_table": "orders",
+        "referenced_column": "order_id"
+      },
+      "products": {
+        "foreign_key": "product_id",
+        "referenced_table": "products",
+        "referenced_column": "product_id"
+      }
+    },
+    "description": "The `order_items` table stores the individual items that are part of an order. Each item is identified by a unique `order_item_id`, which serves as the primary key. The table includes foreign keys `order_id` and `product_id` to link each item to the corresponding order in the `orders` table and product in the `products` table, respectively. The `quantity` field indicates the number of units of the product purchased in each order."
+  },
+  "products": {
+    "columns": [
+      { "name": "product_id", "type": "INT", "key": "PRIMARY" },
+      { "name": "name", "type": "VARCHAR(255)", "key": "" }
+    ],
+    "description": "The `products` table contains information about all available products. Each product is identified by a unique `product_id`, which serves as the primary key. The table includes a `name` field to store the product name. The `products` table is linked to the `order_items` table through the `product_id` foreign key, allowing the retrieval of all orders containing a specific product."
+  }
+}
