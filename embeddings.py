@@ -15,7 +15,7 @@ def get_embedding(text):
 
 # Generate embeddings for each schema component in prose format and save the plain text
 def initialize_schema_embeddings():
-    with open("schema_flip.json", 'r') as f:
+    with open("schema.json", 'r') as f:
         schema = json.load(f)
 
         # Generate embeddings for each schema component
@@ -62,8 +62,9 @@ def initialize_schema_embeddings():
 
 # Example usage:
 # initialize_schema_embeddings()
+ 
 
-
+# Application of the embveddings created above
 def search_relevant_tables(query_embedding, schema_embeddings, top_n=5):
     table_scores = {}
     
@@ -83,7 +84,7 @@ schema_embeddings = load_embeddings()
 def get_query_embedding(query):
     return get_embedding(query)
 
-user_query = "all claims where the vehicle is at Nairobi and whose assessments are in-progress"
+user_query = "list all posts created in october 2023"
 query_embedding = get_query_embedding(user_query)
 relevant_tables = search_relevant_tables(query_embedding, schema_embeddings)
 
@@ -104,6 +105,7 @@ with open('schema_plain_texts.json', 'r') as f:
 # Prepare the prompt for SQL generation
 sql_prompt = prepare_sql_generation_prompt(relevant_tables, schema_plain_texts)
 
+print(f"\n User query: \t {user_query}")
 print(f"\n Relevant tables: \t {relevant_tables}")
 print(f"\n Prompt for injection: \t", sql_prompt)
 
