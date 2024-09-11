@@ -1,2 +1,5 @@
 env
 finetuning_data.jsonl
+schema_flip.json
+schema_plain_texts.json
+schema_embeddings.json
