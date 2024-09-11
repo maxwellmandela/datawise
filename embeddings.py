@@ -61,4 +61,67 @@ def initialize_schema_embeddings():
         return embeddings, plain_texts
 
 # Example usage:
-initialize_schema_embeddings()
+# initialize_schema_embeddings()
+
+
+def search_relevant_tables(query_embedding, schema_embeddings, top_n=5):
+    table_scores = {}
+    
+    # Compare the query embedding with each schema embedding
+    for table, embedding in schema_embeddings.items():
+        similarity = cosine_similarity([query_embedding], [embedding])[0][0]
+        table_scores[table] = similarity
+    
+    # Sort tables by similarity score and return the top N
+    sorted_tables = sorted(table_scores.items(), key=lambda item: item[1], reverse=True)
+    return sorted_tables[:top_n]  # Return top N relevant tables
+
+# Load schema embeddings
+schema_embeddings = load_embeddings()
+
+# Search for relevant tables
+def get_query_embedding(query):
+    return get_embedding(query)
+
+user_query = "all claims where the vehicle is at Nairobi and whose assessments are in-progress"
+query_embedding = get_query_embedding(user_query)
+relevant_tables = search_relevant_tables(query_embedding, schema_embeddings)
+
+def prepare_sql_generation_prompt(relevant_tables, schema_plain_texts):
+    prompt_parts = []
+    
+    for table, score in relevant_tables:
+        if table in schema_plain_texts:
+            prompt_parts.append(schema_plain_texts[table])
+    
+    prompt = "\n".join(prompt_parts)
+    return prompt
+
+# Load plain texts
+with open('schema_plain_texts.json', 'r') as f:
+    schema_plain_texts = json.load(f)
+
+# Prepare the prompt for SQL generation
+sql_prompt = prepare_sql_generation_prompt(relevant_tables, schema_plain_texts)
+
+print(f"\n Relevant tables: \t {relevant_tables}")
+print(f"\n Prompt for injection: \t", sql_prompt)
+
+def parse_query(sql_prompt, query):
+    response = client.chat.completions.create(
+        messages=[
+            {
+                'role': 'system', 
+                'content': 'From a natural language question, generate a SQL query based on the schema provided of tables and columns and relations. \
+                    You should use neccessary joins to achieve this. Reason logically based on provided schema and answer the question with only the SQL query to be run.'
+            },
+            {'role': 'user', 'content': f"Generate a SQL query for the following schema:\n{sql_prompt}\nQuery: {query}",},
+        ],
+        model="gpt-3.5-turbo",
+        temperature=0,
+    )
+    
+    return response.choices[0].message.content.strip()
+
+
+print("\n FINAL QUERY: \t", parse_query(sql_prompt, user_query))
