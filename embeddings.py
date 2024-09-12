@@ -84,15 +84,16 @@ schema_embeddings = load_embeddings()
 def get_query_embedding(query):
     return get_embedding(query)
 
-user_query = "list all posts created in october 2023"
-query_embedding = get_query_embedding(user_query)
-relevant_tables = search_relevant_tables(query_embedding, schema_embeddings)
+user_query = input("Enter a query: ")
+# query_embedding = get_query_embedding(user_query)
+# relevant_tables = search_relevant_tables(query_embedding, schema_embeddings)
 
 def prepare_sql_generation_prompt(relevant_tables, schema_plain_texts):
     prompt_parts = []
     
     for table, score in relevant_tables:
         if table in schema_plain_texts:
+            print(table.split('.')[0])
             prompt_parts.append(schema_plain_texts[table])
     
     prompt = "\n".join(prompt_parts)
@@ -103,11 +104,12 @@ with open('schema_plain_texts.json', 'r') as f:
     schema_plain_texts = json.load(f)
 
 # Prepare the prompt for SQL generation
-sql_prompt = prepare_sql_generation_prompt(relevant_tables, schema_plain_texts)
+# sql_prompt = prepare_sql_generation_prompt(relevant_tables, schema_plain_texts)
+
 
 print(f"\n User query: \t {user_query}")
-print(f"\n Relevant tables: \t {relevant_tables}")
-print(f"\n Prompt for injection: \t", sql_prompt)
+# print(f"\n Relevant tables: \t {relevant_tables}")
+# print(f"\n Prompt for injection: \t", sql_prompt)
 
 def parse_query(sql_prompt, query):
     response = client.chat.completions.create(
@@ -115,15 +117,82 @@ def parse_query(sql_prompt, query):
             {
                 'role': 'system', 
                 'content': 'From a natural language question, generate a SQL query based on the schema provided of tables and columns and relations. \
+                    For inserts i.e data creation, ensure all required fields are filled. \
                     You should use neccessary joins to achieve this. Reason logically based on provided schema and answer the question with only the SQL query to be run.'
             },
             {'role': 'user', 'content': f"Generate a SQL query for the following schema:\n{sql_prompt}\nQuery: {query}",},
         ],
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         temperature=0,
     )
+
+    print(response.usage)
     
     return response.choices[0].message.content.strip()
 
 
-print("\n FINAL QUERY: \t", parse_query(sql_prompt, user_query))
+def condense_schema(schema):
+    condensed_schema = {}
+
+    for table, details in schema.items():
+        condensed_columns = []
+        
+        for column in details["columns"]:
+            # Extract core parts of each column definition
+            parts = column.split("(", 1)
+            col_name = parts[0].strip()
+            rest = parts[1].rstrip(")").split(",") if len(parts) > 1 else []
+            
+            col_type = rest[0].strip() if rest else "unknown"
+            constraints = []
+
+            if "PK" in column or "PRI" in column:
+                constraints.append("PK")
+            if "auto_increment" in column:
+                constraints.append("auto_increment")
+            if "FK" in column:
+                # Handle FK part separately (this assumes you include FK notation in the original)
+                constraints.append("FK")
+            if "MUL" in column:
+                constraints.append("FK")  # Multiplicity likely indicates FK relationship
+
+            # Combine into concise column info
+            col_info = f"{col_name} ({col_type}"
+            if constraints:
+                col_info += ", " + ", ".join(constraints)
+            col_info += ")"
+
+            condensed_columns.append(col_info)
+
+        # Add to condensed schema
+        condensed_schema[table] = condensed_columns
+
+    return condensed_schema
+
+
+def init_condensation():
+    with open("schema.json", 'r') as f:
+        schema = json.load(f)
+
+        # Convert original schema to condensed format
+        condensed_schema = condense_schema(schema)
+        print(f"\n CONDENSED SCHEMA: \n", condensed_schema)
+
+        # Write condensed schema to file
+        with open("condensed_schema.json", 'w') as f:
+            json.dump(condensed_schema, f)
+
+        # Pretty print the condensed schema
+        # def print_condensed_schema(condensed):
+        #     for table, columns in condensed.items():
+        #         print(f"{table}:")
+        #         for col in columns:
+        #             print(f"  - {col}")
+        #         print()
+
+        # print_condensed_schema(condensed_schema)
+        
+init_condensation()
+with open("condensed_schema.json", 'r') as f:
+    schema = json.load(f)
+    print("\n FINAL QUERY: \t", parse_query(schema, user_query))
