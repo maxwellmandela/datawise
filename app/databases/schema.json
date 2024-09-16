@@ -1,0 +1,63 @@
+{
+    "airlines": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "country (varchar(255), not nullable, , , )",
+            "founded (year(4), nullable, , , )"
+        ],
+        "relationships": []
+    },
+    "bookings": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "flight_number (varchar(20), not nullable, , , )",
+            "customer_id (int(11), nullable, MUL, , )",
+            "personnel_id (int(11), nullable, MUL, , )",
+            "date (date, not nullable, , , )",
+            "status (varchar(20), not nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "customer_id",
+                "referenced_table_name": "customers",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "personnel_id",
+                "referenced_table_name": "personnel",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "customers": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "email (varchar(255), not nullable, UNI, , )",
+            "phone (varchar(20), nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "user_type",
+                "referenced_table_name": "user_type",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "personnel": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "position (varchar(255), not nullable, , , )",
+            "airline_id (int(11), nullable, MUL, , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "airline_id",
+                "referenced_table_name": "airlines",
+                "referenced_column_name": "id"
+            }
+        ]
+    }
+}
