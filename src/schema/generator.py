@@ -1,6 +1,6 @@
 import os
 import json
-import mysql.connector
+from src.setup import db_connection
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -44,6 +44,14 @@ def condense_schema(schema):
         condensed_schema[table] = condensed_columns
 
     return condensed_schema
+
+# Pretty print the condensed schema
+def print_condensed_schema(condensed):
+    for table, columns in condensed.items():
+        print(f"{table}:")
+        for col in columns:
+            print(f"  - {col}")
+        print()
 
 
 # Function to fetch table descriptions and relationships
@@ -101,28 +109,24 @@ def get_table_descriptions_and_relationships(cursor):
                 seen_relationships.add(relationship)
 
     # Save schema to JSON file
-    schema_file = 'app/databases/schema.json'
+    schema_file = 'src/databases/schema.json'
     with open(schema_file, 'w') as file:
         json.dump(schema, file, indent=4)
         print(f"Schema with relationships saved to {schema_file}")
 
     condensed = condense_schema(schema)
-    with open("app/databases/condensed_schema.json", 'w') as f:
+    with open("src/databases/condensed_schema.json", 'w') as f:
         json.dump(condensed, f)
         print(f"Condensed schema saved to condensed_schema.json")
 
 
-if __name__ == "__main__":
-    # Connect to MySQL database using environment variables
-    conn = mysql.connector.connect(
-        host=os.getenv('HOST'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('PASSWORD'),
-        database=os.getenv('DATABASE')
-    )
-    cursor = conn.cursor()
+def init_generation():
+    cursor = db_connection.cursor()
 
     # Retrieve table descriptions and relationships
     get_table_descriptions_and_relationships(cursor)
     cursor.close()
-    conn.close()
+    db_connection.close()
+
+if __name__ == "__main__":
+    init_generation()

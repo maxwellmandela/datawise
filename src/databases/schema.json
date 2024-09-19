@@ -1,0 +1,199 @@
+{
+    "billing_methods": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )"
+        ],
+        "relationships": []
+    },
+    "categories": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "description (text, nullable, , , )"
+        ],
+        "relationships": []
+    },
+    "customers": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "email (varchar(255), not nullable, , , )",
+            "phone (varchar(20), nullable, , , )",
+            "billing_address (varchar(255), nullable, , , )",
+            "shipping_address (varchar(255), nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "user_type",
+                "referenced_table_name": "user_type",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "locations": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "address (varchar(255), not nullable, , , )",
+            "city (varchar(100), nullable, , , )",
+            "state (varchar(100), nullable, , , )",
+            "country (varchar(100), nullable, , , )",
+            "postal_code (varchar(20), nullable, , , )"
+        ],
+        "relationships": []
+    },
+    "order_items": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "order_id (int(11), not nullable, MUL, , )",
+            "product_id (int(11), not nullable, , , )",
+            "quantity (int(11), not nullable, , , )",
+            "price (decimal(10,2), not nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "order_id",
+                "referenced_table_name": "orders",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "orders": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "customer_id (int(11), not nullable, MUL, , )",
+            "order_date (date, not nullable, , , )",
+            "total_amount (decimal(10,2), not nullable, , , )",
+            "status (varchar(50), not nullable, , , )",
+            "shipping_address (varchar(255), nullable, , , )",
+            "billing_address (varchar(255), nullable, , , )",
+            "personnel_id (int(11), nullable, MUL, , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "user_id",
+                "referenced_table_name": "customers",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "customer_id",
+                "referenced_table_name": "customers",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "personnel_id",
+                "referenced_table_name": "personnel",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "user_id",
+                "referenced_table_name": "users",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "payments": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "order_id (int(11), not nullable, MUL, , )",
+            "payment_date (date, not nullable, , , )",
+            "amount (decimal(10,2), not nullable, , , )",
+            "payment_method (varchar(50), nullable, , , )",
+            "status (varchar(50), not nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "user_id",
+                "referenced_table_name": "customers",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "order_id",
+                "referenced_table_name": "orders",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "user_id",
+                "referenced_table_name": "users",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "personnel": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "position (varchar(255), nullable, , , )",
+            "location_id (int(11), nullable, MUL, , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "airline_id",
+                "referenced_table_name": "airlines",
+                "referenced_column_name": "id"
+            },
+            {
+                "column_name": "location_id",
+                "referenced_table_name": "locations",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "products": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "subcategory_id (int(11), not nullable, MUL, , )",
+            "name (varchar(255), not nullable, , , )",
+            "description (text, nullable, , , )",
+            "price (decimal(10,2), not nullable, , , )",
+            "stock (int(11), not nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "subcategory_id",
+                "referenced_table_name": "subcategories",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "returns": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "order_item_id (int(11), not nullable, MUL, , )",
+            "return_date (date, not nullable, , , )",
+            "reason (text, nullable, , , )",
+            "status (varchar(50), not nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "order_item_id",
+                "referenced_table_name": "order_items",
+                "referenced_column_name": "id"
+            }
+        ]
+    },
+    "shipping_methods": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "name (varchar(255), not nullable, , , )",
+            "cost (decimal(10,2), not nullable, , , )"
+        ],
+        "relationships": []
+    },
+    "subcategories": {
+        "columns": [
+            "id (int(11), not nullable, PRI, , auto_increment)",
+            "category_id (int(11), not nullable, MUL, , )",
+            "name (varchar(255), not nullable, , , )",
+            "description (text, nullable, , , )"
+        ],
+        "relationships": [
+            {
+                "column_name": "category_id",
+                "referenced_table_name": "categories",
+                "referenced_column_name": "id"
+            }
+        ]
+    }
+}
