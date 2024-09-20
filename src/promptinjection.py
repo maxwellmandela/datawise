@@ -37,15 +37,13 @@ def describe_schema(schema, query: str):
                     You can describe in high level the information on a database given the schema.'
             },
             {'role': 'user', 'content': f"Describe what kind of information this database holds given the schema:\n{schema}",},
-        ],
-        model="gpt-4o-mini",
-        temperature=0,
+        ]
     )
 
     return response
 
 
-def generate_table_columns(schema, sql_query: str):
+def generate_table_columns(schema, sql_query: str, example_data):
     response = run_prompt([
         {
             'role': 'system', 
@@ -63,7 +61,7 @@ def generate_table_columns(schema, sql_query: str):
         },
         {
             'role': 'user', 
-            'content': f"Generate the required columns based on this DB schema:\n{schema}\nand this SQL query:\n{sql_query}"
+            'content': f"Generate the required columns based on this DB schema:\n{schema}\nand this SQL query:\n{sql_query}. Here is a sample row from the data: {example_data}"
         },
     ])
 
