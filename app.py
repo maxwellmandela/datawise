@@ -7,6 +7,7 @@ from src.views.settings import settings
 from src.views.home import home
 from src.views.description import description
 
+# st.title('DataWise - SQL for humans')
 
 # Initialize session state for navigation
 if 'page' not in st.session_state:
