@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def run_generated_sql(sql_query, db_conn, cursor):
-    cursor.execute(sql_query)
+    cursor.execute(sql_query, multi=True)
 
     # If it's a SELECT query, fetch and display the results
     if sql_query.strip().lower().startswith("select"):
@@ -16,14 +16,17 @@ def run_generated_sql(sql_query, db_conn, cursor):
         if len(results):
             columns = generate_table_columns(schema, sql_query, results[0])
             columns = ast.literal_eval(columns)
+
+            print(results)
+
             df = pd.DataFrame(results, columns=columns)
 
             # Display the table in Streamlit
             st.write('### Response')
-            st.table(df)
+            st.write(df)
 
             # st.line_chart(df, x='category_name', y='total_products')
-            
+
             # rerun_query_button = st.button("Re-run database query")
             # if rerun_query_button:
             #     run_generated_sql(sql_query, db_conn, cursor)
@@ -64,7 +67,7 @@ def home():
     st.write("#### Welcome to DataWise!")
     st.write("Ask a question about your data:")
 
-    user_query = st.text_input("Enter your query:")
+    user_query = st.text_area("Enter your query:")
     query_button = st.button("Submit", type="primary")
 
     if query_button and user_query:
