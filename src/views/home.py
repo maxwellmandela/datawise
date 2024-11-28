@@ -14,29 +14,58 @@ def run_generated_sql(sql_query, db_conn, cursor):
 
         # Generate columns | should be finetuned for column names generation, should also allow sending one of the results
         if len(results):
+
+            col1, col2 = st.columns(2)
+           
             columns = generate_table_columns(schema, sql_query, results[0])
             columns = ast.literal_eval(columns)
-
-            print(results)
 
             df = pd.DataFrame(results, columns=columns)
 
             # Display the table in Streamlit
-            st.write('### Response')
-            st.write(df)
+            with col1:
+                st.write('### Response')
+                st.write(df)
 
-            # st.line_chart(df, x='category_name', y='total_products')
+            # Determine available numeric and categorical columns
+            with col2:
+                numeric_columns = df.select_dtypes(include='number').columns.tolist()
+                categorical_columns = df.select_dtypes(exclude='number').columns.tolist()
 
-            # rerun_query_button = st.button("Re-run database query")
-            # if rerun_query_button:
-            #     run_generated_sql(sql_query, db_conn, cursor)
-        else:
-            st.warning('Sorry, that did not return any results')
+                # Display dropdown for chart type selection
+                chart_type = st.selectbox("Select chart type:", ["Bar Chart", "Line Chart", "Pie Chart"])
+
+                if chart_type and numeric_columns and categorical_columns:
+                    st.write('### Visualize')
+
+                    print("CATEGORICAL CLMNS: ", categorical_columns)
+                    print("NUMERIC CLMNS: ", numeric_columns)
+
+                    # Dropdowns to let the user choose categorical and numerical columns
+                    selected_category = st.selectbox("Select categorical column:", categorical_columns)
+                    selected_numeric = st.selectbox("Select numerical column:", numeric_columns)
+
+                    # Create the chart based on user's selections
+                    if chart_type == "Bar Chart":
+                        st.bar_chart(df[[selected_category, selected_numeric]].set_index(selected_category))
+                    elif chart_type == "Line Chart":
+                        st.line_chart(df[[selected_category, selected_numeric]].set_index(selected_category))
+                    elif chart_type == "Pie Chart":
+                        # For pie chart, show the pie chart using Matplotlib
+                        pie_data = df[[selected_category, selected_numeric]].groupby(selected_category).sum()
+                        st.write(pie_data)
+                        
+                        pie_chart = pie_data.plot.pie(y=selected_numeric, autopct='%1.1f%%', figsize=(5, 5))
+                        st.pyplot(pie_chart.figure)
+            
+        # else:
+        #     st.warning('Sorry, that did not return any results')
 
     else:
         # For INSERT, UPDATE, DELETE queries, commit changes and show success message
-        db_conn.commit()
-        st.success(f"Query executed successfully")
+        # db_conn.commit()
+        # st.success(f"Query executed successfully")
+        pass
 
 # Function to handle the query processing
 def process_query(schema, user_query, db_conn):
